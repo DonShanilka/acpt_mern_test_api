@@ -2,12 +2,15 @@ const express = require('express')
 const app = express()
 const port = 3000
 var bodyParser = require('body-parser')
-const { MongoClient } = require('mongodb')
+const { MongoClient, ObjectId } = require('mongodb')
+
+const cors = require('cors');
+app.use(cors());
 
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 
 // Connection URL
@@ -22,26 +25,27 @@ const collection = db.collection('test1');
 
 
 app.get('/', async (req, res) => {
-    console.log(req.body)
-    const insertResult = await collection.insertOne(req.body)
-    res.send(insertResult)
+    const findResult = await collection.find({}).toArray();
+    res.send(findResult);
 })
 
 app.post('/', async (req, res) => {
     console.log(req.body)
-    const insertResult = await collection.insertOne(req.body)
-    res.send(insertResult)
+    const insertResult = await collection.insertOne(req.body);
+    res.send(insertResult);
 })
 
-app.put('/', (req, res) => {
-    res.send('(Put req) Hello World!')
+app.put('/:id', async (req, res) => {
+    const updateResult = await collection.updateOne({ _id: new ObjectId(req.params.id) }, { $set: req.body });
+    console.log('Updated documents =>', updateResult);
 })
 
-app.delete('/', (req, res) => {
-    res.send('(Delete req) Hello World!')
+app.delete('/:id', async (req, res) => {
+    const deleteResult = await collection.deleteOne({ _id: new ObjectId(req.params.id) });
+    res.send(deleteResult);
 })
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+    console.log(`Example app listening on port ${port}`);
 })
 
